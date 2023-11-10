@@ -1,56 +1,51 @@
-import os
-import json
+'''
+The code imports functions from `sql.py` and `util.py` 
+to capture and process lquota output, saving it to a text file. 
+The script then ingests this data into an SQLite database. 
+After processing, the saved file is updated as a backup and subsequently deleted.
+'''
+
 from datetime import datetime
-import subprocess
 
-command = "lquota --no-pretty-print"
+import sql
+import util
 
-completed_process = subprocess.run(command, shell=True, stdout=subprocess.PIPE, text=True)
-if completed_process.returncode == 0:
-    with open("lquota.txt", "a") as file:
-        file.write(completed_process.stdout)
-else:
-    print("Error executing the command")
+process_file = 'lquota.txt'
 
-# Directory to store the log files
-log_directory = 'log'
+# run lquota command and save the output
+util.account_cmd("lquota --no-pretty-print", process_file)
 
-# Check if the log directory exists, if not, create it
-if not os.path.exists(log_directory):
-    os.makedirs(log_directory)
+data = util.read_config()
+tmp_file = data['default']['temp_file_path']
+file_path = f"{tmp_file}/{process_file}"
 
-# Reading the file
-file_path = 'lquota.txt' 
-with open(file_path, 'r') as file:
-    data = file.readlines()
-
-# Processing the lquota data
-keys = ["prj", "fs", "Usage", "Quota", "Limit", "iUsage", "iQuota", "iLimit"]
+with open( file_path, 'r') as file:
+    lquota_data = file.readlines()
+    
+# columns in the lquota data
+# keys = ["prj", "fs", "Usage", "Quota", "Limit", "iUsage", "iQuota", "iLimit"]
 
 # Create timestamp
-nowday = datetime.today().strftime("%Y%m%d%H%M%S")
-lquota = {}
-for line in data[2:]:  # Skip the first two lines of the file as they contain the headers and separator
+nowday = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+for line in lquota_data[2:]: 
     values = line.split()
 
-    if len(values) == len(keys):
-        station = values[0]
-        data = {
-            "fs": values[1],
-            "project": values[0],
-            "timestamp": nowday,
-            "Usage": values[2],
-            "Quota": values[3],
-            "Limit": values[4],
-            "iUsage": values[5],
-            "iQuota": values[6],
-            "iLimit": values[7]
-        }
+    if len(values) == 8:
 
-        # Construct the file path
-        file_path = os.path.join(log_directory, f"lquota.json")
+        project_id = sql.get_project_id(values[0])
+        if values[1] == 'gdata':
+            fs = 1
+        elif values[1] == 'scratch':
+            fs = 2
+        usage= float(values[2])
+        quota= float(values[3])
+        dLimit= float(values[4])
+        iUsage= float(values[5])
+        iQuota= float(values[6])
+        iLimit= float(values[7])
 
+        data = ( project_id[0], nowday, fs, usage, quota, dLimit,iUsage,iQuota, iLimit)
+        
+        sql.ingest_lquota(data)
 
-        # Write the updated content back to the file
-        with open(file_path, 'a') as file:
-            json.dump(data, file, indent=4)
+util.create_backup(process_file, nowday)
