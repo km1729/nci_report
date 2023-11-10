@@ -35,3 +35,23 @@ def ingest_lquota(data):
     '''
     cursor.execute('INSERT INTO lquota VALUES (NULL,?,?,?,?,?,?,?,?,?)', data)
     conn.commit() 
+
+def query(db_table, project=None, fs=None):
+    db_table = f"{db_table}_view"
+    if project is None and fs is None:
+        # Execute select * from db_table when both project and fs are None
+        cursor.execute(f'SELECT * FROM {db_table}')
+    elif project is not None and fs is None:
+        # Execute select * from db_table where project=project when project is specified and fs is None
+        cursor.execute(f'SELECT * FROM {db_table} WHERE project = ?', (project,))
+    elif project is None and fs is not None:
+        # Execute select * from db_table where fs=fs when fs is specified and project is None
+        cursor.execute(f'SELECT * FROM {db_table} WHERE type = ?', (fs,))
+    else:
+        # Execute select * from db_table where project=project and fs=fs when both project and fs are specified
+        cursor.execute(f'SELECT * FROM {db_table} WHERE project = ? AND type = ?', (project, fs))
+    
+    result = cursor.fetchall()
+    conn.commit()
+    return result
+

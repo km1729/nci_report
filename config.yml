@@ -1,6 +1,7 @@
 default:
   "temp_file_path": "/g/data/dp9/km0642/learning/nci_report/log"
   "archive": "/g/data/dp9/km0642/learning/nci_report/archive"
+  "data_stroage": "/g/data/dp9/km0642/learning/nci_report/data"
 
 scratch:
   - dx2

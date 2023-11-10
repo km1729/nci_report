@@ -12,12 +12,12 @@ import util
 
 process_file = 'lquota.txt'
 
+config_data = util.read_config()
+tmp_file = config_data['default']['temp_file_path']
+file_path = f"{tmp_file}/{process_file}"
+
 # run lquota command and save the output
 util.account_cmd("lquota --no-pretty-print", process_file)
-
-data = util.read_config()
-tmp_file = data['default']['temp_file_path']
-file_path = f"{tmp_file}/{process_file}"
 
 with open( file_path, 'r') as file:
     lquota_data = file.readlines()
