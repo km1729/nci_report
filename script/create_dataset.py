@@ -1,47 +1,123 @@
 import sqlite3
 import json
-import yaml
 import util
 import sql
+import os
 # db name
-db_file = './sql/ncireport.db'
+db_file = '/g/data/dp9/km0642/learning/nci_report/sql/ncireport.db'
 
 # establish a connection
 conn = sqlite3.connect(db_file)
 cursor = conn.cursor()
 
-config = util.read_config()
-
 config_data = util.read_config()
-# get list of gdata, scratch, compute
-gdata = config_data['gdata']
-scratch = config_data['scratch']
-compute = config_data['compute']
 
+# get list of gdata compute projects
+gdata_projects = config_data['gdata']
+scratch_projects = config_data['scratch']
 
-query_result = sql.query("lquota",fs='gdata')
-lquota_dataset = {}
-for result in query_result:
-    id, project, datetime, type, usage,quota,dLimit, iusage, iQuota, iLimit = result
-    
-    if project not in lquota_dataset:
-        lquota_dataset[project]= {"type":type, \
-                              "date": [],
-                              "usage": [],
-                              "quota": [],
-                              "limit": [],
-                              "iusage":[],
-                              "iQuota": [],
-                              "iLimit":[]}
-    lquota_dataset[project]["date"].append(datetime)
-    lquota_dataset[project]["usage"].append(usage)
-    lquota_dataset[project]["quota"].append(quota)
-    lquota_dataset[project]["limit"].append(dLimit)
-    lquota_dataset[project]["iusage"].append(iusage)
-    lquota_dataset[project]["iQuota"].append(iQuota)
-    lquota_dataset[project]["iLimit"].append(iLimit)
-    
-with open('output.json', 'w') as json_file:
-    json.dump(lquota_dataset, json_file, indent=2)   
+def process_project_data(project_type, projects):
+    for project in projects:
+        query_condition = f"type='{project_type}' AND project='{project}'"
+        query_result = sql.query("lquota_view", condition=query_condition)
 
-    
+        lquota_dataset = {
+            "disk": [],
+            "inode": []
+        }
+
+        project_lquota = {
+            "datetime": [],
+            "disk": {
+                "Usage": [],
+                "Quota": [],
+                "Limit": []
+            },
+            "inode": {
+                "IUsage": [],
+                "IQuota": [],
+                "ILimit": []
+            }
+        }
+
+        # query the lquota data and create a list
+        for result in query_result:
+            id, project, datetime, type, usage, quota, dLimit, iusage, iQuota, iLimit = result
+
+            project_lquota['datetime'].append(datetime)
+            project_lquota['disk']['Usage'].append(usage)
+            project_lquota['disk']['Quota'].append(quota)
+            project_lquota['disk']['Limit'].append(dLimit)
+            project_lquota['inode']['IUsage'].append(iusage)
+            project_lquota['inode']['IQuota'].append(iQuota)
+            project_lquota['inode']['ILimit'].append(iLimit)
+
+        # create Json data structure        
+        lquota_dataset["disk"].append({
+            "prj": project,
+            "name": f"{type} disk Usage",
+            "x": project_lquota['datetime'],
+            "y": project_lquota['disk']['Usage'],
+            "type": "scatter",
+            "mode": "lines+markers",
+            "line": {"color": "blue"}
+        })
+        # lquota_dataset["disk"].append({
+        #     "prj": project,
+        #     "name": f"{type} disk Quota",
+        #     "x": project_lquota['datetime'],
+        #     "y": project_lquota['disk']['Quota'],
+        #     "type": "scatter",
+        #     "mode": "lines",
+        #     "line": {"color": "orange"}
+        # })
+        lquota_dataset["disk"].append({
+            "prj": project,
+            "name": f"{type} disk Limit",
+            "x": project_lquota['datetime'],
+            "y": project_lquota['disk']['Limit'],
+            "type": "scatter",
+            "mode": "lines",
+            "line": {"color": "red"}
+        })
+
+        # Add other disk entries (Quota, Limit) similarly
+
+        lquota_dataset["inode"].append({
+            "prj": project,
+            "name": f"{type} inode usage",
+            "x": project_lquota['datetime'],
+            "y": project_lquota['inode']['IUsage'],
+            "type": "scatter",
+            "mode": "lines+markers",
+            "line": {"color": "blue"}
+        })
+        # lquota_dataset["inode"].append({
+        #     "prj": project,
+        #     "name": f"{type} inode IQuota",
+        #     "x": project_lquota['datetime'],
+        #     "y": project_lquota['inode']['IQuota'],
+        #     "type": "scatter",
+        #     "mode": "lines",
+        #     "line": {"color": "orange"}
+        # })
+        lquota_dataset["inode"].append({
+            "prj": project,
+            "name": f"{type} inode ILimit",
+            "x": project_lquota['datetime'],
+            "y": project_lquota['inode']['ILimit'],
+            "type": "scatter",
+            "mode": "lines",
+            "line": {"color": "red"}
+        })
+
+        # Add other inode entries (IQuota, ILimit) similarly
+
+        with open(f'/g/data/dp9/km0642/learning/nci_report/data/{project}_{project_type}_lquota_output.json', 'w') as json_file:
+            json.dump(lquota_dataset, json_file, indent=2)
+
+# Process gdata projects
+process_project_data('gdata', gdata_projects)
+
+# Process scratch projects
+process_project_data('scratch', scratch_projects)

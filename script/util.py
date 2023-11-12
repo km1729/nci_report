@@ -44,7 +44,7 @@ def create_backup(filename, date):
         with open(read_file_path, 'r') as read_file, open(archive_file_path, 'a') as write_file:
             write_file.write(f"{date}\n{read_file.read()}")
 
-        os.remove(read_file_path)
+        # os.remove(read_file_path)
         log(filename)
 
         message = f"Archive completed for {filename} on {date}"
