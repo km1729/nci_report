@@ -9,7 +9,7 @@ function formatDiskSize(sizeInBytes) {
     }
 
     // Round to two decimal places
-    const roundedSize = bigSize.round(2);
+    const roundedSize = bigSize.round(0);
 
     return {
         formatted: `${roundedSize.toString()} ${sizes[i]}`,
@@ -18,8 +18,7 @@ function formatDiskSize(sizeInBytes) {
 }
 
 
-
-function createChart(chartData, chartId, height = 300, width = '100%') {
+function createChart(chartData, chartId) {
     chartData.forEach(trace => {
         trace.y = trace.y.map(sizeInBytes => formatDiskSize(sizeInBytes));
     });
@@ -30,14 +29,18 @@ function createChart(chartData, chartId, height = 300, width = '100%') {
     // Increase maxYValue by 10%
     const increasedMaxValue = maxYValue * 1.25;
 
+    const trace = {
+        
+    }
+
     var layout = { 
         title: chartId, 
         yaxis: {
             title: 'usage',
             range: [0, increasedMaxValue], // Set the range based on the numeric values
         },
-        height: height,
-        width: width
+        // height: height,
+        // width: width
     };
 
     chartData.forEach(trace => {

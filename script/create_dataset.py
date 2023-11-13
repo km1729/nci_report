@@ -60,7 +60,12 @@ def process_project_data(project_type, projects):
             "y": project_lquota['disk']['Usage'],
             "type": "scatter",
             "mode": "lines+markers",
-            "line": {"color": "blue"}
+            "line": {
+                "color": "blue",
+                "width": 2,
+                "fill": "tozeroy",
+                "fillcolor": "rgba(0, 0, 255, 0.8)"
+                }
         })
         # lquota_dataset["disk"].append({
         #     "prj": project,
@@ -78,7 +83,7 @@ def process_project_data(project_type, projects):
             "y": project_lquota['disk']['Limit'],
             "type": "scatter",
             "mode": "lines+markers",
-            "line": {"color": "red"}
+            "line": {"color": "red", "width":2}
         })
 
         # Add other disk entries (Quota, Limit) similarly
@@ -90,7 +95,12 @@ def process_project_data(project_type, projects):
             "y": project_lquota['inode']['IUsage'],
             "type": "scatter",
             "mode": "lines+markers",
-            "line": {"color": "blue"}
+            "line": {
+                "color": "blue",
+                "width": 2,
+                "fill": "tozeroy",
+                "fillcolor": "rgba(0, 0, 255, 0.8)"
+                }
         })
         # lquota_dataset["inode"].append({
         #     "prj": project,
@@ -108,7 +118,7 @@ def process_project_data(project_type, projects):
             "y": project_lquota['inode']['ILimit'],
             "type": "scatter",
             "mode": "lines+markers",
-            "line": {"color": "red"}
+            "line": {"color": "red", "width":2}
         })
 
         # Add other inode entries (IQuota, ILimit) similarly
