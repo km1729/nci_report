@@ -1,16 +1,16 @@
 import sqlite3
 import json
 import util
-import sql
-import os
+import database as db
+# import os
+
 # db name
-db_file = '/g/data/dp9/km0642/learning/nci_report/sql/ncireport.db'
+config_data = util.read_config()
+db_file = config_data['default']['db_file']
 
 # establish a connection
 conn = sqlite3.connect(db_file)
 cursor = conn.cursor()
-
-config_data = util.read_config()
 
 # get list of gdata compute projects
 gdata_projects = config_data['gdata']
@@ -19,7 +19,7 @@ scratch_projects = config_data['scratch']
 def process_project_data(project_type, projects):
     for project in projects:
         query_condition = f"type='{project_type}' AND project='{project}'"
-        query_result = sql.query("lquota_view", condition=query_condition)
+        query_result = db.query("lquota_view", condition=query_condition)
 
         lquota_dataset = {
             "disk": [],
@@ -77,7 +77,7 @@ def process_project_data(project_type, projects):
             "x": project_lquota['datetime'],
             "y": project_lquota['disk']['Limit'],
             "type": "scatter",
-            "mode": "lines",
+            "mode": "lines+markers",
             "line": {"color": "red"}
         })
 
@@ -107,13 +107,14 @@ def process_project_data(project_type, projects):
             "x": project_lquota['datetime'],
             "y": project_lquota['inode']['ILimit'],
             "type": "scatter",
-            "mode": "lines",
+            "mode": "lines+markers",
             "line": {"color": "red"}
         })
 
         # Add other inode entries (IQuota, ILimit) similarly
+        data_storage = config_data['default']['data_stroage']
 
-        with open(f'/g/data/dp9/km0642/learning/nci_report/data/{project}_{project_type}_lquota_output.json', 'w') as json_file:
+        with open(f'{data_storage}/{project}_{project_type}_lquota_output.json', 'w') as json_file:
             json.dump(lquota_dataset, json_file, indent=2)
 
 # Process gdata projects

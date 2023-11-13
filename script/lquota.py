@@ -7,7 +7,7 @@ After processing, the saved file is updated as a backup and subsequently deleted
 
 from datetime import datetime
 
-import sql
+import database as db
 import util
 
 process_file = 'lquota.txt'
@@ -32,7 +32,7 @@ for line in lquota_data[2:]:
 
     if len(values) == 8:
 
-        project_id = sql.get_project_id(values[0])
+        project_id = db.get_project_id(values[0])
         if values[1] == 'gdata':
             fs = 1
         elif values[1] == 'scratch':
@@ -46,6 +46,6 @@ for line in lquota_data[2:]:
 
         data = ( project_id[0], nowday, fs, usage, quota, dLimit,iUsage,iQuota, iLimit)
         
-        sql.ingest_lquota(data)
+        db.ingest_lquota(data)
 
 util.create_backup(process_file, nowday)

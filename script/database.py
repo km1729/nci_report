@@ -4,9 +4,13 @@ one for querying and potentially adding records to the project table, and
 another for inserting records into the lquota table
 '''
 import sqlite3
+import util
 
 # db name
-db_file = './sql/ncireport.db'
+config_data = util.read_config()
+db_file = config_data['default']['db_file']
+
+print(db_file)
 
 # establish a connection
 conn = sqlite3.connect(db_file)
@@ -47,4 +51,3 @@ def query(db_table, condition=None):
     result = cursor.fetchall()
     conn.commit()
     return result
-

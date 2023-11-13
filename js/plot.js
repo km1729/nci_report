@@ -55,7 +55,7 @@ function createChart(chartData, chartId, height = 300, width = '100%') {
 }
 
 // Fetch data from JSON file
-fetch('data/lquota_data.json')
+fetch('data/dp9_gdata_lquota_output.json')
     .then(response => response.json())
     .then(data => {
         // Create gdata disk
@@ -66,7 +66,7 @@ fetch('data/lquota_data.json')
     .catch(error => console.error('Error fetching data:', error));
 
 // Fetch data from JSON file
-fetch('data/lquota_scratch.json')
+fetch('data/dp9_scratch_lquota_output.json')
     .then(response => response.json())
     .then(data => {
         // Create scretch disk

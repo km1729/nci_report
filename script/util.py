@@ -10,7 +10,7 @@ import subprocess
 import os
 import logging
 
-config_file='/g/data/dp9/km0642/learning/nci_report/config.yml'
+config_file='/g/data/vx53/km0642/config.yml'
 
 def read_config():
     with open(config_file, 'r') as file:    
